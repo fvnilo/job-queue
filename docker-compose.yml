@@ -1,0 +1,23 @@
+version: '2.4'
+services:
+  publisher:
+    image: job-queue:local
+    command: './main publisher'
+    depends_on:
+      queue:
+        condition: service_healthy
+  listener:
+    image: job-queue:local
+    command: './main worker'
+    depends_on:
+      queue:
+        condition: service_healthy
+  queue:
+    image: rabbitmq:3.7-alpine
+    healthcheck:
+      test: [ "CMD", "rabbitmqctl", "node_health_check"]
+      timeout: 5s
+      interval: 5s
+      retries: 5
+    expose:
+      - "5672"
