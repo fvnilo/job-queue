@@ -1,8 +1,14 @@
-FROM golang:1.10-alpine
+FROM golang:1.10-alpine as builder
 
-RUN mkdir -p /go/src/github.com/nylo-andry/job-queue
-WORKDIR /go/src/github.com/nylo-andry/job-queue
+RUN apk add --update make
+RUN mkdir -p /go/src/github.com/nylo-andry/jobqueue
+WORKDIR /go/src/github.com/nylo-andry/jobqueue
 
 ADD . .
 
-RUN go build -o main .
+RUN make build
+
+FROM alpine:latest  
+WORKDIR /root/
+COPY --from=builder /go/src/github.com/nylo-andry/jobqueue/bin/publisher .
+COPY --from=builder /go/src/github.com/nylo-andry/jobqueue/bin/listener .
